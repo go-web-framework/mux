@@ -1,27 +1,61 @@
 package mux
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
+
+var Stop = errors.New("exit request handling")
+
+// Middleware represents an HTTP middlware function.
+type Middleware func(w http.ResponseWriter, r *http.Request) error
 
 type tree interface {
-	Get()
-	Set()
+	Get(p string) (*Entry, bool)
+	Set(p string, m *Entry)
 }
 
-type Handler http.Handler
+type treeImpl map[string]*Entry
 
-type Middleware func(w http.ResponseWriter, r *http.Request, next HandlerFunc)
-
-func (mw *Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	mw(w, r, nil)
+func (t treeImpl) Get(p string) (e *Entry, ok bool) {
+	e, ok = t[p]
+	return
 }
 
+func (t treeImpl) Set(p string, m *Entry) {
+	t[p] = m
+}
+
+type Entry struct {
+	Path       string
+	Middleware []Middleware
+	Handler    http.Handler
+	Methods    []string // Allowed HTTP methods.
+}
+
+func (e *Entry) Allow(methods ...string) *Entry {
+	e.Methods = append(e.Methods, methods...)
+	return e
+}
+
+// Mux is a serve mux.
 type Mux struct {
-	tree *node
+	tree tree
 }
 
 func New() *Mux {
-	return &Mux{}
+	return &Mux{
+		tree: make(treeImpl),
+	}
 }
 
-func (m *Mux) Handle(path string, mw []Middleware, h Handler) {
+func (m *Mux) Handle(path string, mw []Middleware, h http.Handler) *Entry {
+	e := &Entry{
+		Path:       path,
+		Middleware: mw,
+		Handler:    h,
+		Methods:    nil,
+	}
+	m.tree.Set(path, e)
+	return e
 }
