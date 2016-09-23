@@ -59,3 +59,16 @@ func (m *Mux) Handle(path string, mw []Middleware, h http.Handler) *Entry {
 	m.tree.Set(path, e)
 	return e
 }
+
+func (m *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request){
+	e, _ := m.tree.Get(r.URL.Path);
+	//iterator best way?
+	for _, middleware := range e.Middleware{
+		err := middleware(w, r)
+		if (err != nil){ //err == Stop
+  		//middleware error
+		}
+	}
+	//method check?
+	e.Handler.ServeHTTP(w, r)
+}
