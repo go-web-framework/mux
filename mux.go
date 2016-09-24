@@ -3,7 +3,7 @@ package mux
 import (
 	"errors"
 	"net/http"
-	)
+)
 
 var Stop = errors.New("exit request handling")
 
