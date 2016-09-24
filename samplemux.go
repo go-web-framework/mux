@@ -1,11 +1,12 @@
 package mux
-
+/*
 import (
 	"errors"
 	"net/http"
-	"context"
+	"golang.org/x/net/context"
 	"strings"
 )
+
 
 var Stop = errors.New("exit request handling")
 var urlVar = "^r"
@@ -135,3 +136,5 @@ func serveHandleURL(path string) (getPath string, varValues map[string]string){
 type RequestVars struct{
 	vars map[string]string
 }
+
+*/
